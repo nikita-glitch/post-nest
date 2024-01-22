@@ -7,18 +7,18 @@ import { Column, Entity, MissingPrimaryColumnError, OneToMany, PrimaryGeneratedC
 export class User implements UserInterface {
 
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id: string;
 
   @Column()
   name: string;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
   @Column()
   password: string;
 
-  @Column()
+  @Column({ default: 'user' })
   role: string;
 
   @OneToMany(() => Post, (post) => post.user)

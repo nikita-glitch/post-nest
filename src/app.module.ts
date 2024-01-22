@@ -12,12 +12,12 @@ import { Topcategory } from './topcategory/entities/topcategory.entity';
 
 @Module({
   imports: [ 
-  ConfigModule.forRoot({ envFilePath: '.env'}),
+  ConfigModule.forRoot({ envFilePath: '/home/fusion-team/proj/post-nest/src/.env' }),
   TypeOrmModule.forRoot({
     type: 'postgres',
     host: 'localhost',
     port: parseInt(process.env.DB_PORT),
-    username: 'postgrea',
+    username: 'postgres',
     password: '1234',
     database: 'postgres_nest',
     entities: [Post, User, Subcategory, Topcategory],

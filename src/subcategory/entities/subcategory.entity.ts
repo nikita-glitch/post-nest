@@ -14,7 +14,7 @@ export class Subcategory implements SubcategoryInterface {
   @PrimaryGeneratedColumn('uuid')
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @Column({ nullable: true })

@@ -16,3 +16,7 @@ export interface UserInterface {
   password: string;
   role: string;
 }
+export interface ErrorHandlerInterface {
+  message: string;
+  status: number;
+}

@@ -8,7 +8,7 @@ export class Topcategory implements TopcategoryInterface {
   @PrimaryGeneratedColumn('uuid')
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @OneToMany(() => Subcategory, (subcategory) => subcategory.topcategory)
