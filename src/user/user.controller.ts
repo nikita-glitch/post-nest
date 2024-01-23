@@ -1,24 +1,33 @@
-import { Controller, Post, Body, Res, HttpStatus, UseGuards, Next } from '@nestjs/common';
+import { Controller, Post, Body, Res, HttpStatus, Next } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Response, NextFunction } from 'express';
+import { NextFunction, Response } from 'express';
 import { LoginUserDto } from './dto/login-user.dto';
+import { IsPublic } from 'src/decorator/auth.decorator';
+import { Roles } from 'src/decorator/role.decorator';
 
+// /api/v1/auth/sign-in
+// /api/v1/auth/sign-up
+// /api/v1/auth/restore-password
+// /api/v1/auth/validate-password
 
-@Controller('/user')
+// /api/v1/user/ - list
+// /api/v1/user/:id - get/delete/update one
+@IsPublic(true)
+//@Roles('user')
+@Controller('auth')
 export class UserController {
   constructor(
     private readonly userService: UserService
-    //private readonly guardsServ
     ) {}
 
-  @Post('/auth')
+  @Post('sign-up')
   async auth(
     @Body() createUserDto: CreateUserDto,
     @Res() res: Response,
-    @Next()	next: NextFunction
+    @Next() next: NextFunction
   ): Promise<any> {
-    try {
+    try {      
       await this.userService.create(createUserDto);
       return res
         .status(HttpStatus.CREATED)
@@ -27,19 +36,17 @@ export class UserController {
       next(error)
     }
   }
-  
-  @Post('/login')
+
+  @Post('sign-in')
   async login(
     @Body() LoginUserDto: LoginUserDto,
     @Res() res: Response,
-    @Next()	next: NextFunction
   ): Promise<any> {
     try {
       return res
         .status(HttpStatus.OK)
         .json(await this.userService.login(LoginUserDto));
     } catch (error) {
-      next(error)
     }
   }
 }

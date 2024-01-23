@@ -1,26 +1,70 @@
 import { Injectable } from '@nestjs/common';
 import { CreateSubcategoryDto } from './dto/create-subcategory.dto';
 import { UpdateSubcategoryDto } from './dto/update-subcategory.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Subcategory } from './entities/subcategory.entity';
+import { Repository } from 'typeorm';
+import { Topcategory } from 'src/topcategory/entities/topcategory.entity';
 
 @Injectable()
 export class SubcategoryService {
-  create(createSubcategoryDto: CreateSubcategoryDto) {
-    return 'This action adds a new subcategory';
+  constructor(
+    @InjectRepository(Subcategory)
+    private subcategoryRep: Repository<Subcategory>,
+    @InjectRepository(Topcategory)
+    private topcategoryRep: Repository<Topcategory>,
+  ) {}
+
+  async create(
+    createSubcategoryDto: CreateSubcategoryDto,
+    topcategoryName: string,
+  ) {
+    const topcategory = await this.topcategoryRep.findOneBy({
+      name: topcategoryName,
+    });
+    if (!topcategory) {
+       // TODO
+    }
+    const isNameExist = await this.subcategoryRep.findOneBy({
+      name: createSubcategoryDto.name,
+    });
+    if (isNameExist) {
+       // TODO
+    }
+    const subcategory = this.subcategoryRep.create({
+      name: createSubcategoryDto.name,
+      topcategory: topcategory,
+    });
+    await this.subcategoryRep.save(subcategory);
   }
 
-  findAll() {
-    return `This action returns all subcategory`;
+  async findAll(): Promise<Subcategory[]> {
+    return this.subcategoryRep.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} subcategory`;
+  async update(id: number, updateSubcategoryDto: UpdateSubcategoryDto) {
+    const isNameExist = await this.subcategoryRep.findOneBy({
+      name: updateSubcategoryDto.name,
+    });
+    if (isNameExist) {
+       // TODO
+    }
+    await this.subcategoryRep.update(id, { name: updateSubcategoryDto.name });
   }
 
-  update(id: number, updateSubcategoryDto: UpdateSubcategoryDto) {
-    return `This action updates a #${id} subcategory`;
+  async remove(subcategoryId: number) {
+    const subcategory = await this.subcategoryRep.findOneBy({
+      id: subcategoryId,
+    });
+    if (!subcategory) {
+       // TODO
+    }
+    await this.subcategoryRep.remove(subcategory);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} subcategory`;
+  async getTopcategorySubcategories(
+    topcategoryId: number,
+  ): Promise<Subcategory[]> {
+    return await this.subcategoryRep.findBy({ topcategoryId: topcategoryId });
   }
 }

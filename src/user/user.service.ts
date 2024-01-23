@@ -12,35 +12,50 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    private jwtServise: JwtService
+    private jwtServise: JwtService,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<any> {
-    const { name, email, password } = createUserDto;
-    const person = await this.userRepository.findOneBy({ email: email })
-    if (person) {
-      throw new HttpException('User with this email alredy exists', HttpStatus.BAD_REQUEST)
+  async create(createUserDto: CreateUserDto): Promise<void> {
+    try {
+      const { name, email, password } = createUserDto;
+      const person = await this.userRepository.findOneBy({ email: email });
+      console.log(person);
+
+      if (person) {
+        throw new HttpException(
+          'User with this email already exists',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      const hashedPass = await bcrypt.hash(password, 3);
+      const user = this.userRepository.create({
+        name: name,
+        email: email,
+        password: hashedPass,
+      });
+      await this.userRepository.save(user);
+    } catch (error) {
+      
     }
-    const hashedPass = await bcrypt.hash(password, 3)
-    const user = this.userRepository.create({
-      name: name,
-      email: email,
-      password: hashedPass,
-    });
-    await this.userRepository.save(user)
   }
 
   async login(LoginUserDto: LoginUserDto): Promise<string> {
     const { email, password } = LoginUserDto;
-    const person = await this.userRepository.findOneBy({ email: email })
+    const person = await this.userRepository.findOneBy({ email: email });
     if (!person) {
-      throw new HttpException('Wrong email or password', HttpStatus.BAD_REQUEST)
+      throw new HttpException('Wrong email or password', HttpStatus.NOT_FOUND);
     }
     const comparedPass = await bcrypt.compare(password, person.password);
     if (!comparedPass) {
-      throw new HttpException('Wrong email or password', HttpStatus.BAD_REQUEST)
+      throw new HttpException(
+        'Wrong email or password',
+        HttpStatus.UNAUTHORIZED,
+      );
     }
-    const token = await this.jwtServise.signAsync({ id: person.id, role: person.role }, { secret: process.env.SECRET_KEY })
-    return token
+    const token = await this.jwtServise.signAsync(
+      { id: person.id },
+      { secret: process.env.SECRET_KEY },
+    );
+    return token;
   }
 }

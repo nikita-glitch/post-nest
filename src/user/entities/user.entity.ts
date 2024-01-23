@@ -7,7 +7,7 @@ import { Column, Entity, MissingPrimaryColumnError, OneToMany, PrimaryGeneratedC
 export class User implements UserInterface {
 
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: number;
 
   @Column()
   name: string;

@@ -1,26 +1,55 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTopcategoryDto } from './dto/create-topcategory.dto';
 import { UpdateTopcategoryDto } from './dto/update-topcategory.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Topcategory } from './entities/topcategory.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class TopcategoryService {
-  create(createTopcategoryDto: CreateTopcategoryDto) {
-    return 'This action adds a new topcategory';
+  constructor(
+    @InjectRepository(Topcategory)
+    private topcategoryRep: Repository<Topcategory>,
+  ) {}
+
+  async create(createTopcategoryDto: CreateTopcategoryDto) {
+    const isNameExist = await this.topcategoryRep.findOneBy({
+      name: createTopcategoryDto.name,
+    });
+    if (isNameExist) {
+      // TODO
+    }
+    const topcategory = this.topcategoryRep.create({
+      name: createTopcategoryDto.name,
+    });
+    await this.topcategoryRep.save(topcategory);
   }
 
-  findAll() {
-    return `This action returns all topcategory`;
+  async findAll() {
+    return this.topcategoryRep.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} topcategory`;
+  async update(
+    topcategoryId: number,
+    updateTopcategoryDto: UpdateTopcategoryDto,
+  ) {
+    const isNameExist = await this.topcategoryRep.findOneBy({
+      name: UpdateTopcategoryDto.name,
+    });
+    if (isNameExist) {
+    }
+    await this.topcategoryRep.update(topcategoryId, {
+      name: updateTopcategoryDto.name,
+    });
   }
 
-  update(id: number, updateTopcategoryDto: UpdateTopcategoryDto) {
-    return `This action updates a #${id} topcategory`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} topcategory`;
+  async remove(topcategoryId: number) {
+    const topcategory = await this.topcategoryRep.findOneBy({
+      id: topcategoryId,
+    });
+    if (topcategory) {
+       // TODO
+    }
+    await this.topcategoryRep.remove(topcategory);
   }
 }

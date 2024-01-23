@@ -1,34 +1,58 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Res, HttpStatus } from '@nestjs/common';
 import { TopcategoryService } from './topcategory.service';
 import { CreateTopcategoryDto } from './dto/create-topcategory.dto';
 import { UpdateTopcategoryDto } from './dto/update-topcategory.dto';
+import { Roles } from 'src/decorator/role.decorator';
+import { AuthGuard } from 'src/Guards/authGuard';
+import { Response } from 'express';
 
 @Controller('topcategory')
 export class TopcategoryController {
-  constructor(private readonly topcategoryService: TopcategoryService) {}
+  constructor(
+    private readonly topcategoryService: TopcategoryService,
+    ) {}
 
-  @Post()
-  create(@Body() createTopcategoryDto: CreateTopcategoryDto) {
-    return this.topcategoryService.create(createTopcategoryDto);
+  @UseGuards(AuthGuard)
+  @Roles('admin')
+  @Post('topcategory')
+  async create(
+    @Body() 
+    createTopcategoryDto: CreateTopcategoryDto,
+    @Res() res: Response
+    ) {
+    await this.topcategoryService.create(createTopcategoryDto);
+    res.status(HttpStatus.CREATED).json({ message: 'Topcategory has been created succsessfully'})
   }
 
-  @Get()
-  findAll() {
-    return this.topcategoryService.findAll();
+  @Roles('user')
+  @Get('topcategory')
+  async findAll(
+    @Res() res: Response
+  ) {
+    res.status(HttpStatus.OK).json(await this.topcategoryService.findAll())
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.topcategoryService.findOne(+id);
+  @UseGuards(AuthGuard)
+  @Roles('admin')
+  @Patch('topcategory')
+  async update(
+    @Body() 
+    updateTopcategoryDto: UpdateTopcategoryDto, 
+    topcategoryId: number,
+    @Res() res: Response
+    ) {
+    await this.topcategoryService.update(topcategoryId, updateTopcategoryDto);
+    res.status(HttpStatus.OK).json({ message: 'Topcategory has been updated succsessfully'})
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTopcategoryDto: UpdateTopcategoryDto) {
-    return this.topcategoryService.update(+id, updateTopcategoryDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.topcategoryService.remove(+id);
+  @UseGuards(AuthGuard)
+  @Roles('admin')
+  @Delete('topcategory')
+  async remove(
+    @Body() topcategoryId: number,
+    @Res() res: Response
+    ) {
+    await this.topcategoryService.remove(topcategoryId);
+    res.status(HttpStatus.OK).json({ message: 'Topcategory has been deleted succsessfully'})
   }
 }
