@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateTopcategoryDto } from './dto/create-topcategory.dto';
 import { UpdateTopcategoryDto } from './dto/update-topcategory.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,7 +17,7 @@ export class TopcategoryService {
       name: createTopcategoryDto.name,
     });
     if (isNameExist) {
-      // TODO
+      throw new HttpException('Topcategory with this name already exists', HttpStatus.BAD_REQUEST)
     }
     const topcategory = this.topcategoryRep.create({
       name: createTopcategoryDto.name,
@@ -37,6 +37,7 @@ export class TopcategoryService {
       name: UpdateTopcategoryDto.name,
     });
     if (isNameExist) {
+      throw new HttpException('Topcategory with this name already exists', HttpStatus.BAD_REQUEST)
     }
     await this.topcategoryRep.update(topcategoryId, {
       name: updateTopcategoryDto.name,
@@ -48,7 +49,7 @@ export class TopcategoryService {
       id: topcategoryId,
     });
     if (topcategory) {
-       // TODO
+      throw new HttpException('Topcategory not found', HttpStatus.NOT_FOUND)
     }
     await this.topcategoryRep.remove(topcategory);
   }

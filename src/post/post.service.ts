@@ -20,10 +20,9 @@ export class PostService {
 
   async createPost(
     CreatePostDto: CreatePostDto,
-    id: number,
-    subcategoryId: number,
+    id: number
   ): Promise<any> {
-    const { postText } = CreatePostDto;
+    const { postText, subcategoryId } = CreatePostDto;
     const user = await this.userRep.findOneBy({ id: id });
     const subcategory = await this.subcategoryRep.findOneBy({
       id: subcategoryId,
@@ -42,37 +41,39 @@ export class PostService {
     await this.postRep.save(post);
   }
 
-  async updatePost(UpdatePostDto: UpdatePostDto, postId: number, id: number) {
+  async updatePost(UpdatePostDto: UpdatePostDto, params: { id: number, userId: number }) {
     const { postText } = UpdatePostDto;
+    const { id, userId } = params
     const post = await this.postRep.findOneBy({
-      id: postId,
-      userId: id,
+      id: id,
+      userId: userId,
     });
     if (!post) {
-      //TODO
+      throw new HttpException('Post not found', HttpStatus.NOT_FOUND);
     }
-    await this.postRep.update(postId, { postText: postText });
+    await this.postRep.update(id, { postText: postText });
   }
 
-  async deletePost(id: number, postId: number) {
+  async deletePost(params: { id: number, userId: number },) {
+    const { id, userId } = params
     const post = await this.postRep.findOneBy({
-      id: postId,
-      userId: id,
+      id: id,
+      userId: userId,
     });
     if (!post) {
-      //TODO
+      throw new HttpException('Post not found', HttpStatus.NOT_FOUND);
     }
     await this.postRep.remove(post);
   }
 
-  async getAllPosts(): Promise<Post[]> {
-    return this.postRep.find();
+  async getAllPosts(): Promise<Post[]> {    
+    return this.postRep.findBy({});
   }
 
   async getSubcategoryPosts(subcategoryId: number): Promise<Post[]> {
     const subcategory = this.subcategoryRep.findOneBy({ id: subcategoryId });
     if (!subcategory) {
-      //TODO
+      throw new HttpException('Subcategory not found', HttpStatus.NOT_FOUND);
     }
     return this.postRep.findBy({ subcategoryId: subcategoryId });
   }
@@ -80,7 +81,7 @@ export class PostService {
   async getUserPosts(id: number): Promise<Post[]> {
     const user = this.userRep.findOneBy({ id: id });
     if (!user) {
-      //TODO
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
     return this.postRep.findBy({ userId: id });
   }

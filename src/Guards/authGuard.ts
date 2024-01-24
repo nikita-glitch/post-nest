@@ -8,7 +8,6 @@ import {
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsPublic } from 'src/decorator/auth.decorator';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 
@@ -41,7 +40,7 @@ export class AuthGuard implements CanActivate {
     if (!user) {
       throw new HttpException('User does not found', HttpStatus.NOT_FOUND);
     }
-    req.body.id = decodedToken.id;
+    req.params.userId = decodedToken.id;
     return true;
   }
 }

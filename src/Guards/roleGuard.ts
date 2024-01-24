@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,24 +14,27 @@ export class RoleGuard implements CanActivate {
     private reflector: Reflector,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // const requiredRole = this.reflector.getAllAndOverride<'user' | 'admin'>(
-    //   'roles',
-    //   [context.getHandler(), context.getClass()],
-    // );
-    // const req = context.switchToHttp().getRequest();
-    // const token = req.headers.authorization?.split(' ')[1];
-    // if (!token || Object.keys(token).length === 0) {
-    // }
-    // const decodedToken = await this.jwtService.verifyAsync(token, {
-    //   secret: process.env.SECRET_KEY,
-    // });
-    // const user = await this.userRep.findOneBy({ id: decodedToken.id });
-    // if (!user) {
-    // }
-    // if (user.role === 'admin') {
+    const requiredRole = this.reflector.getAllAndOverride<'user' | 'admin'>(
+      'roles',
+      [context.getHandler(), context.getClass()],
+    );
+    if (requiredRole === 'user') {
       return true
-    // }
-    
-    // return user.role === requiredRole;
+    }
+    const req = context.switchToHttp().getRequest();
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token || Object.keys(token).length === 0) {
+    }
+    const decodedToken = await this.jwtService.verifyAsync(token, {
+      secret: process.env.SECRET_KEY,
+    });
+    const user = await this.userRep.findOneBy({ id: decodedToken.id });
+    if (!user) {
+      throw new HttpException('Post not found', HttpStatus.NOT_FOUND)
+    }
+    if (user.role === 'admin') {
+      return true
+    }
+    return user.role === requiredRole;
   }
 }

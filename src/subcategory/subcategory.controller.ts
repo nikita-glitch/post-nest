@@ -8,32 +8,37 @@ import {
   UseGuards,
   Res,
   HttpStatus,
+  UsePipes,
+  Param,
+  Req,
 } from '@nestjs/common';
 import { SubcategoryService } from './subcategory.service';
 import { CreateSubcategoryDto } from './dto/create-subcategory.dto';
 import { UpdateSubcategoryDto } from './dto/update-subcategory.dto';
 import { Roles } from 'src/decorator/role.decorator';
 import { AuthGuard } from 'src/Guards/authGuard';
-import { Response } from 'express';
+import { Response, Request } from 'express';
+import { ValidationPipe } from 'src/pipe/validation.pipe';
+import { createSubcategorySchema, updateSubcategorySchema } from 'src/validationSchemas/subcategory.schema';
 
-@Controller('subcategory')
+@Controller('subcategories')
 export class SubcategoryController {
   constructor(private subcategoryService: SubcategoryService) {}
 
   @UseGuards(AuthGuard)
   @Roles('admin')
-  @Post('subcategory')
+  @UsePipes(new ValidationPipe(createSubcategorySchema))
+  @Post('')
   async create(
     @Body()
     createSubcategoryDto: CreateSubcategoryDto,
-    topcategoryName: string,
     @Res() res: Response,
-  ) {
-    await this.subcategoryService.create(createSubcategoryDto, topcategoryName);
+  ) {    
+    await this.subcategoryService.create(createSubcategoryDto);
     res.status(HttpStatus.CREATED).json({ message: 'Subcategory has been created succsessfully' });
   }
 
-  @Roles('user')
+  //@Roles('user')
   @Get('')
   async findAll(
     @Res() res: Response
@@ -43,10 +48,12 @@ export class SubcategoryController {
 
   @UseGuards(AuthGuard)
   @Roles('admin')
-  @Patch('subcategory')
+  @UsePipes(new ValidationPipe(updateSubcategorySchema))
+  @Patch(':id')
   async update(
     @Body() 
     updateSubcategoryDto: UpdateSubcategoryDto, 
+    @Param('id')
     subcategoryId: number,
     @Res() res: Response
     ) {
@@ -56,9 +63,9 @@ export class SubcategoryController {
 
   @UseGuards(AuthGuard)
   @Roles('admin')
-  @Delete('subcategory')
+  @Delete(':id')
   async remove(
-    @Body()
+    @Param('id')
     subcategoryId: number,
     @Res() res: Response
   ) {
@@ -67,9 +74,9 @@ export class SubcategoryController {
   }
 
   @Roles('user')
-  @Get('')
+  @Get('topcategories/:id/subcategories')
   async getTopcategorySubcategories(
-    @Body()
+    @Param('id')
     topcategoryId: number,
     @Res() res: Response
   ) {

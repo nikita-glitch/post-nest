@@ -1,10 +1,12 @@
-import { Controller, Post, Body, Res, HttpStatus, Next } from '@nestjs/common';
+import { Controller, Post, Body, Res, HttpStatus, Next, UsePipes } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { NextFunction, Response } from 'express';
 import { LoginUserDto } from './dto/login-user.dto';
 import { IsPublic } from 'src/decorator/auth.decorator';
 import { Roles } from 'src/decorator/role.decorator';
+import { ValidationPipe } from 'src/pipe/validation.pipe';
+import { signInSchema, signUpSchema } from 'src/validationSchemas/auth.schema';
 
 // /api/v1/auth/sign-in
 // /api/v1/auth/sign-up
@@ -13,40 +15,33 @@ import { Roles } from 'src/decorator/role.decorator';
 
 // /api/v1/user/ - list
 // /api/v1/user/:id - get/delete/update one
+
 @IsPublic(true)
-//@Roles('user')
+@Roles('user')
 @Controller('auth')
 export class UserController {
-  constructor(
-    private readonly userService: UserService
-    ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Post('sign-up')
+  @UsePipes(new ValidationPipe(signUpSchema))
   async auth(
     @Body() createUserDto: CreateUserDto,
     @Res() res: Response,
-    @Next() next: NextFunction
   ): Promise<any> {
-    try {      
-      await this.userService.create(createUserDto);
-      return res
-        .status(HttpStatus.CREATED)
-        .json({ message: 'User has been created succsessfully' });
-    } catch (error) {
-      next(error)
-    }
+    await this.userService.create(createUserDto);
+    return res
+      .status(HttpStatus.CREATED)
+      .json({ message: 'User has been created succsessfully' });
   }
 
   @Post('sign-in')
+  @UsePipes(new ValidationPipe(signInSchema))
   async login(
     @Body() LoginUserDto: LoginUserDto,
     @Res() res: Response,
   ): Promise<any> {
-    try {
-      return res
-        .status(HttpStatus.OK)
-        .json(await this.userService.login(LoginUserDto));
-    } catch (error) {
-    }
+    return res
+      .status(HttpStatus.OK)
+      .json(await this.userService.login(LoginUserDto));
   }
 }

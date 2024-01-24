@@ -12,9 +12,6 @@ import { JwtModule } from '@nestjs/jwt';
 @Module({
   imports: [TypeOrmModule.forFeature([Post, User, Subcategory]), JwtModule],
   controllers: [PostController],
-  providers: [PostService, {
-    provide: APP_GUARD,
-    useClass: AuthGuard
-  }],
+  providers: [PostService],
 })
 export class PostModule {}

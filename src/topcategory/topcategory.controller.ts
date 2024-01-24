@@ -1,20 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Res, HttpStatus, UsePipes } from '@nestjs/common';
 import { TopcategoryService } from './topcategory.service';
 import { CreateTopcategoryDto } from './dto/create-topcategory.dto';
 import { UpdateTopcategoryDto } from './dto/update-topcategory.dto';
 import { Roles } from 'src/decorator/role.decorator';
 import { AuthGuard } from 'src/Guards/authGuard';
 import { Response } from 'express';
+import { IsPublic } from 'src/decorator/auth.decorator';
+import { ValidationPipe } from 'src/pipe/validation.pipe';
+import { TopcategorySchema } from 'src/validationSchemas/topcategory.schema';
 
-@Controller('topcategory')
+@Controller('topcategories')
 export class TopcategoryController {
   constructor(
     private readonly topcategoryService: TopcategoryService,
     ) {}
 
+  @Post('')
   @UseGuards(AuthGuard)
   @Roles('admin')
-  @Post('topcategory')
+  @UsePipes(new ValidationPipe(TopcategorySchema))
   async create(
     @Body() 
     createTopcategoryDto: CreateTopcategoryDto,
@@ -25,7 +29,7 @@ export class TopcategoryController {
   }
 
   @Roles('user')
-  @Get('topcategory')
+  @Get('')
   async findAll(
     @Res() res: Response
   ) {
@@ -34,10 +38,12 @@ export class TopcategoryController {
 
   @UseGuards(AuthGuard)
   @Roles('admin')
-  @Patch('topcategory')
+  @UsePipes(new ValidationPipe(TopcategorySchema))
+  @Patch(':id')
   async update(
     @Body() 
     updateTopcategoryDto: UpdateTopcategoryDto, 
+    @Param('id')
     topcategoryId: number,
     @Res() res: Response
     ) {
@@ -47,9 +53,9 @@ export class TopcategoryController {
 
   @UseGuards(AuthGuard)
   @Roles('admin')
-  @Delete('topcategory')
+  @Delete(':id')
   async remove(
-    @Body() topcategoryId: number,
+    @Param('id') topcategoryId: number,
     @Res() res: Response
     ) {
     await this.topcategoryService.remove(topcategoryId);

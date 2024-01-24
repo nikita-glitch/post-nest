@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateSubcategoryDto } from './dto/create-subcategory.dto';
 import { UpdateSubcategoryDto } from './dto/update-subcategory.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,22 +17,25 @@ export class SubcategoryService {
 
   async create(
     createSubcategoryDto: CreateSubcategoryDto,
-    topcategoryName: string,
   ) {
+    const { name, topcategoryName } = createSubcategoryDto;
     const topcategory = await this.topcategoryRep.findOneBy({
       name: topcategoryName,
     });
+    console.log(topcategoryName);
+    
     if (!topcategory) {
-       // TODO
+      throw new HttpException('Topcategory not found', HttpStatus.NOT_FOUND)
+
     }
     const isNameExist = await this.subcategoryRep.findOneBy({
-      name: createSubcategoryDto.name,
+      name: name,
     });
     if (isNameExist) {
-       // TODO
+      throw new HttpException('Subcategory with this name already exists', HttpStatus.BAD_REQUEST)
     }
     const subcategory = this.subcategoryRep.create({
-      name: createSubcategoryDto.name,
+      name: name,
       topcategory: topcategory,
     });
     await this.subcategoryRep.save(subcategory);
@@ -41,13 +44,12 @@ export class SubcategoryService {
   async findAll(): Promise<Subcategory[]> {
     return this.subcategoryRep.find();
   }
-
   async update(id: number, updateSubcategoryDto: UpdateSubcategoryDto) {
     const isNameExist = await this.subcategoryRep.findOneBy({
       name: updateSubcategoryDto.name,
     });
     if (isNameExist) {
-       // TODO
+      throw new HttpException('Subcategory with this name already exists', HttpStatus.BAD_REQUEST)
     }
     await this.subcategoryRep.update(id, { name: updateSubcategoryDto.name });
   }
@@ -65,6 +67,6 @@ export class SubcategoryService {
   async getTopcategorySubcategories(
     topcategoryId: number,
   ): Promise<Subcategory[]> {
-    return await this.subcategoryRep.findBy({ topcategoryId: topcategoryId });
+    return  this.subcategoryRep.findBy({ topcategoryId: topcategoryId });
   }
 }

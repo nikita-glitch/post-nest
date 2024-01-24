@@ -15,7 +15,6 @@ export interface UserInterface {
   name: string;
   email: string;
   password: string;
-  role: string;
 }
 
 export interface ErrorHandlerInterface {

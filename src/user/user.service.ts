@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from './dto/login-user.dto';
+import { NextFunction } from 'express';
 
 @Injectable()
 export class UserService {
@@ -16,27 +17,21 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<void> {
-    try {
-      const { name, email, password } = createUserDto;
-      const person = await this.userRepository.findOneBy({ email: email });
-      console.log(person);
-
-      if (person) {
-        throw new HttpException(
-          'User with this email already exists',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-      const hashedPass = await bcrypt.hash(password, 3);
-      const user = this.userRepository.create({
-        name: name,
-        email: email,
-        password: hashedPass,
-      });
-      await this.userRepository.save(user);
-    } catch (error) {
-      
+    const { name, email, password } = createUserDto;
+    const person = await this.userRepository.findOneBy({ email: email });
+    if (person) {
+      throw new HttpException(
+        'User with this email already exists',
+        HttpStatus.BAD_REQUEST,
+      );
     }
+    const hashedPass = await bcrypt.hash(password, 3);
+    const user = this.userRepository.create({
+      name: name,
+      email: email,
+      password: hashedPass,
+    });
+    await this.userRepository.save(user);
   }
 
   async login(LoginUserDto: LoginUserDto): Promise<string> {
