@@ -17,7 +17,8 @@ export interface UserInterface {
   password: string;
 }
 
-export interface ErrorHandlerInterface {
-  message: string;
-  status: number;
+export interface DecodedTokenInterface {
+  id: number;
+  iat: number;
+  exp: number;
 }

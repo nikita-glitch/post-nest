@@ -8,16 +8,11 @@ import { Topcategory } from './entities/topcategory.entity';
 import { User } from 'src/user/entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthGuard } from 'src/Guards/authGuard';
+import { Subcategory } from 'src/subcategory/entities/subcategory.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Topcategory, User]), JwtModule],
+  imports: [TypeOrmModule.forFeature([Topcategory, User, Subcategory]), JwtModule],
   controllers: [TopcategoryController],
-  providers: [TopcategoryService, {
-    provide: APP_GUARD,
-    useClass: RoleGuard
-  }, {
-    provide: APP_GUARD,
-    useClass: AuthGuard
-  }],
+  providers: [TopcategoryService, ],
 })
 export class TopcategoryModule {}

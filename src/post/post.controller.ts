@@ -7,16 +7,13 @@ import {
   Param,
   Patch,
   Post,
-  Query,
-  Req,
   Res,
   UseGuards,
-  UseInterceptors,
   UsePipes,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { AuthGuard } from 'src/Guards/authGuard';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { ValidationPipe } from 'src/pipe/validation.pipe';
@@ -24,14 +21,12 @@ import {
   createPostSchema,
   updatePostSchema,
 } from 'src/validationSchemas/post.schema';
-import { IsPublic } from 'src/decorator/auth.decorator';
-import { Roles } from 'src/decorator/role.decorator';
 
 @Controller('posts')
 export class PostController {
   constructor(private postService: PostService) {}
 
-  @Roles('user')
+  @UseGuards(AuthGuard)
   @UsePipes(new ValidationPipe(createPostSchema))
   @Post('')
   async createPost(
@@ -47,12 +42,12 @@ export class PostController {
       .json({ message: 'Post has created succsessfully' });
   }
 
-  @Roles('user')
+  @UseGuards(AuthGuard)
   @UsePipes(new ValidationPipe(updatePostSchema))
   @Patch(':id')
   async updatePost(
     @Param()
-    params: { id: number, userId: number },
+    params: { id: number; userId: number },
     @Body()
     UpdatePostDto: UpdatePostDto,
     @Res() res: Response,
@@ -63,10 +58,11 @@ export class PostController {
       .json({ message: 'Post has been updated succsessfully' });
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':id')
   async deletePost(
     @Param()
-    params: { id: number, userId: number },
+    params: { id: number; userId: number },
     @Res() res: Response,
   ) {
     await this.postService.deletePost(params);
@@ -75,29 +71,16 @@ export class PostController {
 
   @Get('')
   async getAll(@Res() res: Response) {
-    const posts = await this.postService.getAllPosts;
-    return res.status(HttpStatus.OK).json(posts);
+    return res.status(HttpStatus.OK).json(await this.postService.getAll());
   }
 
-  @Roles('user')
-  @Get('subcategories/:id/posts')
-  async getSubcategoryPosts(
-    @Param('id') id: number,
-    @Res() res: Response,
-  ) {
-    res
-      .status(HttpStatus.OK)
-      .json(await this.postService.getSubcategoryPosts(id));
-  }
-
+  @UseGuards(AuthGuard)
   @Get('users/:id/posts')
   async getUserPosts(
     @Param('userId')
-    id: number, 
+    id: number,
     @Res() res: Response,
   ) {
-    res
-      .status(HttpStatus.OK)
-      .json(await this.postService.getUserPosts(id));
+    res.status(HttpStatus.OK).json(await this.postService.getUserPosts(id));
   }
 }

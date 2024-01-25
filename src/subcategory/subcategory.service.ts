@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Subcategory } from './entities/subcategory.entity';
 import { Repository } from 'typeorm';
 import { Topcategory } from 'src/topcategory/entities/topcategory.entity';
+import { Post } from 'src/post/entities/post.entity';
 
 @Injectable()
 export class SubcategoryService {
@@ -13,6 +14,9 @@ export class SubcategoryService {
     private subcategoryRep: Repository<Subcategory>,
     @InjectRepository(Topcategory)
     private topcategoryRep: Repository<Topcategory>,
+    @InjectRepository(Post)
+    private postRep: Repository<Post>,
+
   ) {}
 
   async create(
@@ -21,12 +25,9 @@ export class SubcategoryService {
     const { name, topcategoryName } = createSubcategoryDto;
     const topcategory = await this.topcategoryRep.findOneBy({
       name: topcategoryName,
-    });
-    console.log(topcategoryName);
-    
+    });    
     if (!topcategory) {
       throw new HttpException('Topcategory not found', HttpStatus.NOT_FOUND)
-
     }
     const isNameExist = await this.subcategoryRep.findOneBy({
       name: name,
@@ -45,13 +46,14 @@ export class SubcategoryService {
     return this.subcategoryRep.find();
   }
   async update(id: number, updateSubcategoryDto: UpdateSubcategoryDto) {
+    const name = updateSubcategoryDto.name
     const isNameExist = await this.subcategoryRep.findOneBy({
-      name: updateSubcategoryDto.name,
+      name: name,
     });
     if (isNameExist) {
       throw new HttpException('Subcategory with this name already exists', HttpStatus.BAD_REQUEST)
     }
-    await this.subcategoryRep.update(id, { name: updateSubcategoryDto.name });
+    await this.subcategoryRep.update(id, { name: name });
   }
 
   async remove(subcategoryId: number) {
@@ -59,14 +61,16 @@ export class SubcategoryService {
       id: subcategoryId,
     });
     if (!subcategory) {
-       // TODO
+      throw new HttpException('Subcategory not found', HttpStatus.NOT_FOUND)
     }
     await this.subcategoryRep.remove(subcategory);
   }
 
-  async getTopcategorySubcategories(
-    topcategoryId: number,
-  ): Promise<Subcategory[]> {
-    return  this.subcategoryRep.findBy({ topcategoryId: topcategoryId });
+  async getSubcategoryPosts(subcategoryId: number): Promise<Post[]> {
+    const subcategory = this.subcategoryRep.findOneBy({ id: subcategoryId });
+    if (!subcategory) {
+      throw new HttpException('Subcategory not found', HttpStatus.NOT_FOUND);
+    }
+    return this.postRep.findBy({ subcategoryId: subcategoryId });
   }
 }

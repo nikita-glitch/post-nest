@@ -5,7 +5,6 @@ import { UpdateTopcategoryDto } from './dto/update-topcategory.dto';
 import { Roles } from 'src/decorator/role.decorator';
 import { AuthGuard } from 'src/Guards/authGuard';
 import { Response } from 'express';
-import { IsPublic } from 'src/decorator/auth.decorator';
 import { ValidationPipe } from 'src/pipe/validation.pipe';
 import { TopcategorySchema } from 'src/validationSchemas/topcategory.schema';
 
@@ -36,10 +35,10 @@ export class TopcategoryController {
     res.status(HttpStatus.OK).json(await this.topcategoryService.findAll())
   }
 
+  @Patch(':id')
   @UseGuards(AuthGuard)
   @Roles('admin')
   @UsePipes(new ValidationPipe(TopcategorySchema))
-  @Patch(':id')
   async update(
     @Body() 
     updateTopcategoryDto: UpdateTopcategoryDto, 
@@ -51,14 +50,23 @@ export class TopcategoryController {
     res.status(HttpStatus.OK).json({ message: 'Topcategory has been updated succsessfully'})
   }
 
+  @Delete(':id')
   @UseGuards(AuthGuard)
   @Roles('admin')
-  @Delete(':id')
   async remove(
     @Param('id') topcategoryId: number,
     @Res() res: Response
     ) {
     await this.topcategoryService.remove(topcategoryId);
     res.status(HttpStatus.OK).json({ message: 'Topcategory has been deleted succsessfully'})
+  }
+
+  @Get(':id/subcategories')
+  async getTopcategorySubcategories(
+    @Param('id')
+    topcategoryId: number,
+    @Res() res: Response
+  ) {
+    res.status(HttpStatus.OK).json(await this.topcategoryService.getTopcategorySubcategories(topcategoryId));
   }
 }

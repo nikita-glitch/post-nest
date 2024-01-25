@@ -12,6 +12,6 @@ import { JwtModule } from '@nestjs/jwt';
 @Module({
   imports: [TypeOrmModule.forFeature([Post, User, Subcategory]), JwtModule],
   controllers: [PostController],
-  providers: [PostService],
+  providers: [PostService, ],
 })
 export class PostModule {}

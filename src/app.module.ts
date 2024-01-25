@@ -10,9 +10,10 @@ import { User } from './user/entities/user.entity';
 import { Subcategory } from './subcategory/entities/subcategory.entity';
 import { Topcategory } from './topcategory/entities/topcategory.entity';
 import { APP_FILTER } from '@nestjs/core';
-import { custonExceptionFilter } from './exceptionFilter/exception.filter';
+import { customExceptionFilter } from './exceptionFilter/exception.filter';
 
 const path = '/home/fusion-team/proj/post-nest/src/.env'
+
 @Module({
   imports: [ 
   ConfigModule.forRoot({ envFilePath: path }),
@@ -29,7 +30,7 @@ const path = '/home/fusion-team/proj/post-nest/src/.env'
   controllers: [],
   providers: [{
     provide: APP_FILTER,
-    useClass: custonExceptionFilter
+    useClass: customExceptionFilter
   }],
 })
 export class AppModule {}

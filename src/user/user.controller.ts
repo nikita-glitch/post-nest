@@ -1,10 +1,8 @@
 import { Controller, Post, Body, Res, HttpStatus, Next, UsePipes } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { NextFunction, Response } from 'express';
+import { Response } from 'express';
 import { LoginUserDto } from './dto/login-user.dto';
-import { IsPublic } from 'src/decorator/auth.decorator';
-import { Roles } from 'src/decorator/role.decorator';
 import { ValidationPipe } from 'src/pipe/validation.pipe';
 import { signInSchema, signUpSchema } from 'src/validationSchemas/auth.schema';
 
@@ -16,8 +14,6 @@ import { signInSchema, signUpSchema } from 'src/validationSchemas/auth.schema';
 // /api/v1/user/ - list
 // /api/v1/user/:id - get/delete/update one
 
-@IsPublic(true)
-@Roles('user')
 @Controller('auth')
 export class UserController {
   constructor(private readonly userService: UserService) {}

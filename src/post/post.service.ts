@@ -66,16 +66,8 @@ export class PostService {
     await this.postRep.remove(post);
   }
 
-  async getAllPosts(): Promise<Post[]> {    
-    return this.postRep.findBy({});
-  }
-
-  async getSubcategoryPosts(subcategoryId: number): Promise<Post[]> {
-    const subcategory = this.subcategoryRep.findOneBy({ id: subcategoryId });
-    if (!subcategory) {
-      throw new HttpException('Subcategory not found', HttpStatus.NOT_FOUND);
-    }
-    return this.postRep.findBy({ subcategoryId: subcategoryId });
+  async getAll(): Promise<Post[]> {    
+    return this.postRep.find();
   }
 
   async getUserPosts(id: number): Promise<Post[]> {

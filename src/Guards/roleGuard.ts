@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
+import { TokenExtractor } from './tokenExtractor/tokenExtractor';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
@@ -18,22 +19,13 @@ export class RoleGuard implements CanActivate {
       'roles',
       [context.getHandler(), context.getClass()],
     );
-    if (requiredRole === 'user') {
-      return true
-    }
     const req = context.switchToHttp().getRequest();
     const token = req.headers.authorization?.split(' ')[1];
-    if (!token || Object.keys(token).length === 0) {
-    }
-    const decodedToken = await this.jwtService.verifyAsync(token, {
-      secret: process.env.SECRET_KEY,
-    });
+    const tokenExtractor = new TokenExtractor(this.jwtService);
+    const decodedToken = await tokenExtractor.extract(token);
     const user = await this.userRep.findOneBy({ id: decodedToken.id });
     if (!user) {
       throw new HttpException('Post not found', HttpStatus.NOT_FOUND)
-    }
-    if (user.role === 'admin') {
-      return true
     }
     return user.role === requiredRole;
   }

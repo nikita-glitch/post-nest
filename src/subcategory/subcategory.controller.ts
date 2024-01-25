@@ -38,7 +38,6 @@ export class SubcategoryController {
     res.status(HttpStatus.CREATED).json({ message: 'Subcategory has been created succsessfully' });
   }
 
-  //@Roles('user')
   @Get('')
   async findAll(
     @Res() res: Response
@@ -73,13 +72,15 @@ export class SubcategoryController {
     res.status(HttpStatus.OK).json({ message: 'Subcategory has been deleted succsessfully' });
   }
 
-  @Roles('user')
-  @Get('topcategories/:id/subcategories')
-  async getTopcategorySubcategories(
-    @Param('id')
-    topcategoryId: number,
+
+  @Get(':id/posts')
+  async getSubcategoryPosts(
+    @Param('id') 
+    id: number, 
     @Res() res: Response
-  ) {
-    res.status(HttpStatus.OK).json(await this.subcategoryService.getTopcategorySubcategories(topcategoryId));
+    ) {
+    res
+      .status(HttpStatus.OK)
+      .json(await this.subcategoryService.getSubcategoryPosts(id));
   }
 }
