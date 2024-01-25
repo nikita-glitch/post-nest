@@ -27,7 +27,6 @@ export class TopcategoryController {
     res.status(HttpStatus.CREATED).json({ message: 'Topcategory has been created succsessfully'})
   }
 
-  @Roles('user')
   @Get('')
   async findAll(
     @Res() res: Response

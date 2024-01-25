@@ -5,28 +5,26 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { TokenExtractor } from './tokenExtractor/tokenExtractor';
+import { Roles } from 'src/decorator/role.decorator';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
   constructor(
     @InjectRepository(User)
     private userRep: Repository<User>,
-    private jwtService: JwtService,
     private reflector: Reflector,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredRole = this.reflector.getAllAndOverride<'user' | 'admin'>(
-      'roles',
-      [context.getHandler(), context.getClass()],
-    );
+    const role = this.reflector.get<'user' | 'admin'>('roles', context.getHandler());
+    if (!role) {
+      return true
+    }
     const req = context.switchToHttp().getRequest();
-    const token = req.headers.authorization?.split(' ')[1];
-    const tokenExtractor = new TokenExtractor(this.jwtService);
-    const decodedToken = await tokenExtractor.extract(token);
-    const user = await this.userRep.findOneBy({ id: decodedToken.id });
+    const id = req.params.userId
+    const user = await this.userRep.findOneBy({ id: id });
     if (!user) {
       throw new HttpException('Post not found', HttpStatus.NOT_FOUND)
-    }
-    return user.role === requiredRole;
+    }    
+    return user.role === role;
   }
 }

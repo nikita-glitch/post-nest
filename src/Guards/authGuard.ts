@@ -18,7 +18,6 @@ export class AuthGuard implements CanActivate {
     @InjectRepository(User)
     private userRep: Repository<User>,
     private jwtService: JwtService,
-    private reflector: Reflector,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();

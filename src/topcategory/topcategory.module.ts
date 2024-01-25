@@ -13,6 +13,9 @@ import { Subcategory } from 'src/subcategory/entities/subcategory.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([Topcategory, User, Subcategory]), JwtModule],
   controllers: [TopcategoryController],
-  providers: [TopcategoryService, ],
+  providers: [TopcategoryService, {
+    provide: APP_GUARD,
+    useClass: RoleGuard
+  }],
 })
 export class TopcategoryModule {}
